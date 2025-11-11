@@ -33,3 +33,6 @@ class MainController :
 
     def delete_graph(self, n):
         self.__model.delete_graph()
+
+    def add_node(self, position):
+        self.__model.add_node(position)
