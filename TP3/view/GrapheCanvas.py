@@ -1,5 +1,6 @@
 import networkx as nx
 from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QMouseEvent
 
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
@@ -60,5 +61,9 @@ class GraphCanvas(FigureCanvasQTAgg):
         self._pos = position
         self.draw_graphe()
 
-    def mousePressEvent(self, event):
-        self.__controller.add_node(event)
+    def mousePressEvent(self, event : QMouseEvent):
+        if True:
+            pos = self.__convert_pos(event)
+            self.__controller.add_node(pos)
+        else:
+

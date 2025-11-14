@@ -75,6 +75,9 @@ class GrapheModel(QObject):
         self.grapheChanged.emit(self._pos )
 
     def add_node(self, position):
-        print(position)
-        #self._pos[len(self._pos) + 1] = position
+        length = len(self._pos)
+        self._pos[length] = position
+        self._graphe.add_node(length)
+
+        self.grapheChanged.emit(self._pos)
 
