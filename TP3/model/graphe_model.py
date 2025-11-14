@@ -74,10 +74,20 @@ class GrapheModel(QObject):
         # Notif des vues
         self.grapheChanged.emit(self._pos )
 
+    def click_event(self, position):
+        positions = self._pos.values()
+        if True:
+            self.add_node(position)
+        else:
+            self.select_node(position)
+
     def add_node(self, position):
         length = len(self._pos)
         self._pos[length] = position
         self._graphe.add_node(length)
 
         self.grapheChanged.emit(self._pos)
+
+    def select_node(self, noeud):
+        pass
 

@@ -62,8 +62,7 @@ class GraphCanvas(FigureCanvasQTAgg):
         self.draw_graphe()
 
     def mousePressEvent(self, event : QMouseEvent):
-        if True:
-            pos = self.__convert_pos(event)
-            self.__controller.add_node(pos)
-        else:
+        pos = self.__convert_pos(event)
+        print(pos)
+        self.__controller.click_event(pos)
 
