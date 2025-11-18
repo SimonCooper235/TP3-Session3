@@ -14,6 +14,8 @@ class GrapheModel(QObject):
     _pos=None
     #contient le noeud selectionné
     _selected = None
+    #numero à assigné aux noeuds
+    _num_node : int = 10
 
     # probabilité qu'une arête existe entre deux nœuds pour la generation
     __proba=0.5
@@ -90,9 +92,9 @@ class GrapheModel(QObject):
             self.add_node(position)
 
     def add_node(self, position):
-        length = len(self._pos)
-        self._pos[length] = position
-        self._graphe.add_node(length)
+        self._pos[self._num_node] = position
+        self._graphe.add_node(self._num_node)
+        self._num_node += 1
 
         self.grapheChanged.emit(self._pos)
 
@@ -113,7 +115,9 @@ class GrapheModel(QObject):
         return node_color
 
     def delete_noeud(self):
-        del self._pos[self._selected]
-        self._graphe.remove_node(self._selected)
+        if self._selected is not None:
+            del self._pos[self._selected]
+            self._graphe.remove_node(self._selected)
+            self._selected = None
 
-        self.grapheChanged.emit(self._pos)
+            self.grapheChanged.emit(self._pos)
