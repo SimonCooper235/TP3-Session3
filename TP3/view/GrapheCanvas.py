@@ -62,10 +62,13 @@ class GraphCanvas(FigureCanvasQTAgg):
         self._pos = position
         self.draw_graphe()
 
-    def mousePressEvent(self, event : QMouseEvent):
+    def mousePressEvent(self, event):
         pos = self.__convert_pos(event)
-        print(pos)
         self.__controller.click_event(pos)
+
+    def mouseReleaseEvent(self, event):
+        pos = self.__convert_pos(event)
+        self.__controller.release_event(pos)
 
     def keyPressEvent(self, event):
         self.__controller.delete_noeud()

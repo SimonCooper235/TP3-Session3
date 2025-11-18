@@ -91,6 +91,9 @@ class GrapheModel(QObject):
         else:
             self.add_node(position)
 
+    def release_event(self, pos):
+        pass
+
     def add_node(self, position):
         self._pos[self._num_node] = position
         self._graphe.add_node(self._num_node)

@@ -26,7 +26,6 @@ class MainWindow(QMainWindow):
         if TYPE_CHECKING:
             self.__controller: MainController | None = None
 
-
     def add_canvas(self, canvas):
         #  insérer le canvas dans le layout
         self.grapheLayout.addWidget(canvas)
