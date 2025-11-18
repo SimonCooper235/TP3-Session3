@@ -67,3 +67,5 @@ class GraphCanvas(FigureCanvasQTAgg):
         print(pos)
         self.__controller.click_event(pos)
 
+    def keyPressEvent(self, event):
+        self.__controller.delete_noeud()

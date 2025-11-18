@@ -39,3 +39,6 @@ class MainController :
 
     def color(self):
         return self.__model.color_list()
+
+    def delete_noeud(self):
+        self.__model.delete_noeud()

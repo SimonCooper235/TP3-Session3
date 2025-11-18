@@ -64,6 +64,8 @@ class GrapheModel(QObject):
         # stocke le nouveau layout
         self._pos  = nx.spring_layout(self._graphe, seed=42)
 
+        self._selected = None
+
         # Notif des vues
         self.grapheChanged.emit(self._pos )
 
@@ -109,3 +111,9 @@ class GrapheModel(QObject):
             else:
                 node_color.append('skyblue')
         return node_color
+
+    def delete_noeud(self):
+        del self._pos[self._selected]
+        self._graphe.remove_node(self._selected)
+
+        self.grapheChanged.emit(self._pos)
