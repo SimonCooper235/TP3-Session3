@@ -12,6 +12,8 @@ class GrapheModel(QObject):
     _graphe:Graph = nx.Graph()
     #_pos contient le layout, soit le mapping noeud -> position pour l'Affichage
     _pos=None
+    #contient le noeud selectionné
+    _selected = None
 
     # probabilité qu'une arête existe entre deux nœuds pour la generation
     __proba=0.5
@@ -75,11 +77,15 @@ class GrapheModel(QObject):
         self.grapheChanged.emit(self._pos )
 
     def click_event(self, position):
-        positions = self._pos.values()
-        if True:
-            self.add_node(position)
-        else:
+        positions = list(self._pos.values())
+        hasPos = False
+        for pos in positions:
+            if pos[0] - 0.1 < position[0] < pos[0] + 0.1 and pos[1] - 0.1 < position[1] < pos[1] + 0.1:
+                hasPos = True
+        if hasPos:
             self.select_node(position)
+        else:
+            self.add_node(position)
 
     def add_node(self, position):
         length = len(self._pos)
@@ -88,6 +94,18 @@ class GrapheModel(QObject):
 
         self.grapheChanged.emit(self._pos)
 
-    def select_node(self, noeud):
-        pass
+    def select_node(self, position):
+        for key, pos in self._pos.items():
+            if pos[0] - 0.1 < position[0] < pos[0] + 0.1 and pos[1] - 0.1 < position[1] < pos[1] + 0.1:
+                self._selected = key
 
+        self.grapheChanged.emit(self._pos)
+
+    def color_list(self):
+        node_color = []
+        for node in self._graphe.nodes():
+            if node == self._selected:
+                node_color.append('teal')
+            else:
+                node_color.append('skyblue')
+        return node_color

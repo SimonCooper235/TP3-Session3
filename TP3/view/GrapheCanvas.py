@@ -44,11 +44,12 @@ class GraphCanvas(FigureCanvasQTAgg):
         self.draw()
 
     def __draw_graphe(self):
+        noeud_couleur = self.__controller.color()
         if self.__controller.graphe() is None:
             return
         try :
             # Dessiner le graphe dans l'axe du canvas
-            nx.draw(self.__controller.graphe(), self._pos , with_labels=True, node_color='skyblue', node_size=800)
+            nx.draw(self.__controller.graphe(), self._pos , with_labels=True, node_color=noeud_couleur, node_size=800)
             labels = nx.get_edge_attributes(self.__controller.graphe(), "weight")
             nx.draw_networkx_edge_labels(self.__controller.graphe(), self._pos , edge_labels=labels)
         except NetworkXError as nxe :
