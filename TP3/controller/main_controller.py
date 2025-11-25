@@ -37,8 +37,8 @@ class MainController :
     def click_event(self, position):
         self.__model.click_event(position)
 
-    def release_event(self, pos):
-        self.__model.release_event(pos)
+    def release_event(self, pos, type):
+        self.__model.release_event(pos, type)
 
     def color(self):
         return self.__model.color_list()

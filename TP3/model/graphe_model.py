@@ -96,12 +96,45 @@ class GrapheModel(QObject):
         else:
             self.add_node(position)
 
-    def release_event(self, pos):
+    def release_event(self, pos, type):
         hasPos = self.verifierPos(pos)
+        positions = self._pos.values()
 
-        if hasPos and self._selected[0] != pos[0] and self._selected[1] != pos[0]:
-            pass
+        if self._selected != None:
+            x = self._pos[self._selected][0]
+            y = self._pos[self._selected][1]
+            x1, y1 = pos
 
+            if hasPos and type == "L":
+                 self.select_node(pos)
+            elif hasPos and type == "R":
+                self.ajout_arete(pos)
+            elif type == "L" :
+                self.move_node(pos)
+
+    def ajout_arete(self, position):
+        noeud = None
+        nouv_arete = None
+        for key, pos in self._pos.items():
+            if pos[0] - 0.1 < position[0] < pos[0] + 0.1 and pos[1] - 0.1 < position[1] < pos[1] + 0.1:
+                noeud = key
+
+        if self._selected > noeud :
+            nouv_arete = (noeud, self._selected)
+        else:
+            nouv_arete = (self._selected, noeud)
+
+        if nouv_arete not in self._graphe.edges():
+            self._graphe.add_edge(self._selected, noeud, weight = 1)
+
+        self.grapheChanged.emit(self._pos )
+
+
+    def move_node(self, position):
+        node = self._selected
+        self._pos[node] = position
+
+        self.grapheChanged.emit(self._pos)
 
     def add_node(self, position):
         self._pos[self._num_node] = position

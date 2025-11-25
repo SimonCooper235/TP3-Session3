@@ -66,9 +66,13 @@ class GraphCanvas(FigureCanvasQTAgg):
         pos = self.__convert_pos(event)
         self.__controller.click_event(pos)
 
-    def mouseReleaseEvent(self, event):
+    def mouseReleaseEvent(self, event : QMouseEvent):
         pos = self.__convert_pos(event)
-        self.__controller.release_event(pos)
+        if event.button() == Qt.MouseButton.LeftButton:
+            self.__controller.release_event(pos, "L")
+        elif event.button() == Qt.MouseButton.RightButton:
+            self.__controller.release_event(pos, "R")
 
     def keyPressEvent(self, event):
-        self.__controller.delete_noeud()
+        if event.key() == 16777223:
+            self.__controller.delete_noeud()
