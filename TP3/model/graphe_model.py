@@ -80,19 +80,28 @@ class GrapheModel(QObject):
         # Notif des vues
         self.grapheChanged.emit(self._pos )
 
-    def click_event(self, position):
+    #verifie si un noeud est présent à la position
+    def verifierPos(self, position):
         positions = list(self._pos.values())
         hasPos = False
         for pos in positions:
             if pos[0] - 0.1 < position[0] < pos[0] + 0.1 and pos[1] - 0.1 < position[1] < pos[1] + 0.1:
                 hasPos = True
+        return hasPos
+
+    def click_event(self, position):
+        hasPos = self.verifierPos(position)
         if hasPos:
             self.select_node(position)
         else:
             self.add_node(position)
 
     def release_event(self, pos):
-        pass
+        hasPos = self.verifierPos(pos)
+
+        if hasPos and self._selected[0] != pos[0] and self._selected[1] != pos[0]:
+            pass
+
 
     def add_node(self, position):
         self._pos[self._num_node] = position
