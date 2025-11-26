@@ -3,6 +3,7 @@ import threading
 
 import networkx as nx
 import matplotlib.pyplot as plt
+import numpy as np
 from PyQt6.QtCore import pyqtSignal, QObject, QThread
 from networkx import Graph
 
@@ -11,8 +12,10 @@ class GrapheModel(QObject):
     _graphe:Graph = nx.Graph()
     #_pos contient le layout, soit le mapping noeud -> position pour l'Affichage
     _pos=None
-    #contient le noeud selectionné
+    #contient le noeud sélectionné
     _selected = None
+    #contient l'arête sélectionné
+    _selected_edge = None
     #contient les chemin le plus court
     _chemin_court = None
     #numero à assigné aux noeuds
@@ -101,42 +104,49 @@ class GrapheModel(QObject):
         else:
             self.add_node(position)
 
-    def release_event(self, pos, type):
-        hasPos = self.verifierPos(pos)
+    def release_event(self, pos_init, pos_end, type):
+        hasInit = self.verifierPos(pos_init)
+        hasEnd = self.verifierPos(pos_end)
+        same_pos = pos_init[0] == pos_end[0] and pos_init[1] == pos_end[1]
 
-        if self._selected != None:
-            x = self._pos[self._selected][0]
-            y = self._pos[self._selected][1]
-            x1, y1 = pos
+        if hasInit and hasEnd and type == "L" and same_pos:
+            self.select_node(pos_init)
+        elif hasInit and hasEnd and type == "R" :
+            self.ajout_arete(pos_init, pos_end)
+        elif hasInit and not hasEnd and type == "L" and not same_pos:
+            self.move_node(pos_init, pos_end)
+        elif not hasInit and not hasEnd and type == "L" and same_pos:
+            self.trouv_arete(pos_end)
 
-            if hasPos and type == "L":
-                 self.select_node(pos)
-            elif hasPos and type == "R":
-                self.ajout_arete(pos)
-            elif type == "L" :
-                self.move_node(pos)
 
-    def ajout_arete(self, position):
-        noeud = None
+    def ajout_arete(self, pos_init, pos_end):
+        noeud1 = None
+        noeud2 = None
         nouv_arete = None
         for key, pos in self._pos.items():
-            if pos[0] - 0.1 < position[0] < pos[0] + 0.1 and pos[1] - 0.1 < position[1] < pos[1] + 0.1:
-                noeud = key
+            if pos[0] - 0.1 < pos_init[0] < pos[0] + 0.1 and pos[1] - 0.1 < pos_init[1] < pos[1] + 0.1:
+                noeud1 = key
+            if pos[0] - 0.1 < pos_end[0] < pos[0] + 0.1 and pos[1] - 0.1 < pos_end[1] < pos[1] + 0.1:
+                noeud2 = key
 
-        if self._selected > noeud :
-            nouv_arete = (noeud, self._selected)
+        if noeud1 > noeud2 :
+            nouv_arete = (noeud2, noeud1)
         else:
-            nouv_arete = (self._selected, noeud)
+            nouv_arete = (noeud1, noeud2)
 
         if nouv_arete not in self._graphe.edges():
-            self._graphe.add_edge(self._selected, noeud, weight = 1)
+            self._graphe.add_edge(noeud1, noeud2, weight = 1)
 
         self.grapheChanged.emit(self._pos )
 
 
-    def move_node(self, position):
-        node = self._selected
-        self._pos[node] = position
+    def move_node(self, position1, position2):
+        noeud1 = None
+        for key, pos in self._pos.items():
+            if pos[0] - 0.1 < position1[0] < pos[0] + 0.1 and pos[1] - 0.1 < position1[1] < pos[1] + 0.1:
+                noeud1 = key
+
+        self._pos[noeud1] = position2
 
         self.grapheChanged.emit(self._pos)
 
@@ -151,6 +161,7 @@ class GrapheModel(QObject):
         for key, pos in self._pos.items():
             if pos[0] - 0.1 < position[0] < pos[0] + 0.1 and pos[1] - 0.1 < position[1] < pos[1] + 0.1:
                 self._selected = key
+                self._selected_edge = None
 
         self.grapheChanged.emit(self._pos)
 
@@ -165,13 +176,18 @@ class GrapheModel(QObject):
                 node_color.append('skyblue')
         return node_color
 
-    def delete_noeud(self):
+    def delete(self):
         if self._selected is not None:
             del self._pos[self._selected]
             self._graphe.remove_node(self._selected)
             self._selected = None
 
-            self.grapheChanged.emit(self._pos)
+        if self._selected_edge is not None:
+            for edge in self.graphe.edges():
+                if edge[0] == self._selected_edge[0] and edge[1] == self._selected_edge[1]:
+                    self.graphe.remove_edge(edge[0], edge[1])
+
+        self.grapheChanged.emit(self._pos)
 
     def trouver_chemin(self, debut, fin):
         self._chemin_court = nx.shortest_path(self._graphe, source=debut, target=fin, weight = 'weight')
@@ -180,6 +196,7 @@ class GrapheModel(QObject):
     def edge_color_list(self):
         edge_color = []
         edges = self._graphe.edges()
+        sel = self._selected_edge
         colour_edge = None
 
         for edge in edges:
@@ -192,6 +209,8 @@ class GrapheModel(QObject):
             if colour_edge is not None and edge[0] == colour_edge[0] and edge[1] == colour_edge[1]:
                 self._chemin_court.remove(edge[0])
                 edge_color.append('orange')
+            elif sel is not None and edge[0] == sel[0] and edge[1] == sel[1] :
+                edge_color.append('teal')
             else:
                 edge_color.append('black')
 
@@ -204,5 +223,61 @@ class GrapheModel(QObject):
             if noeud <= valeur:
                 list.append(noeud)
         self._chemin_court = list
+
+        self.grapheChanged.emit(self._pos)
+
+    def distance_point_segment(self, clic, noeud1, noeud2):
+        point_clic = np.array(clic)
+        noeud1 = np.array(noeud1)
+        noeud2 = np.array(noeud2)
+
+        vect_noeuds = noeud2 - noeud1
+        vect_clic_noeud1 = point_clic - noeud1
+
+        vect_noeuds2 = np.dot(vect_noeuds, vect_noeuds)
+        if vect_noeuds2 == 0:
+            return np.linalg.norm(point_clic - noeud1)
+
+        t = np.dot(vect_clic_noeud1, vect_noeuds) / vect_noeuds2
+        t = max(0, min(1, t))
+        closest = noeud1 + t * vect_noeuds
+        return np.linalg.norm(point_clic - closest)
+
+    def trouv_arete(self, clic, threshold = 0.02):
+        closest_edge = None
+        closest_distance = float('inf')
+
+        for x, y in self._graphe.edges():
+            noeud1 = self._pos[x]
+            noeud2 = self._pos[y]
+
+            dist = self.distance_point_segment(clic, noeud1, noeud2)
+
+            if dist < closest_distance:
+                closest_distance = dist
+                closest_edge = (x, y)
+
+        if closest_distance > threshold:
+            self.add_node(clic)
+        else:
+            self._selected = None
+            self._selected_edge = closest_edge
+            self.grapheChanged.emit(self._pos)
+
+    def modifier_poids(self, signe):
+        arete = self._selected_edge
+
+        if signe:
+            self.graphe[arete[0]][arete[1]]['weight'] += 1
+        else:
+            self.graphe[arete[0]][arete[1]]['weight'] -= 1
+
+        self.grapheChanged.emit(self._pos)
+
+    def unsel(self):
+        if self._selected is not None:
+            self._selected = None
+        elif self._selected_edge is not None:
+            self._selected_edge = None
 
         self.grapheChanged.emit(self._pos)

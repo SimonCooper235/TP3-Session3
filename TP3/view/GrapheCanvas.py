@@ -15,6 +15,9 @@ if TYPE_CHECKING:
 class GraphCanvas(FigureCanvasQTAgg):
     _pos=None
 
+    _mouse_press=None
+    _mouse_release=None
+
     def __init__(self):
         # Crée une figure matplotlib
         self.fig, self.ax = plt.subplots(figsize=(10, 10))
@@ -65,20 +68,25 @@ class GraphCanvas(FigureCanvasQTAgg):
         self.draw_graphe()
 
     def mousePressEvent(self, event):
-        if event.button() == Qt.MouseButton.LeftButton:
-            pos = self.__convert_pos(event)
-            self.__controller.click_event(pos)
+        pos = self.__convert_pos(event)
+        self._mouse_press = pos
 
     def mouseReleaseEvent(self, event : QMouseEvent):
         pos = self.__convert_pos(event)
+        self._mouse_release = pos
         if event.button() == Qt.MouseButton.LeftButton:
-            self.__controller.release_event(pos, "L")
-            self.__controller.click_event(pos)
+            self.__controller.release_event(self._mouse_press, pos, "L")
         elif event.button() == Qt.MouseButton.RightButton:
-            self.__controller.release_event(pos, "R")
+            self.__controller.release_event(self._mouse_press, pos, "R")
 
     def keyPressEvent(self, event):
         if event.key() == 16777223:
-            self.__controller.delete_noeud()
-        if event.key() == 80:
+            self.__controller.delete()
+        elif event.key() == 80:
             self.__controller.sommets()
+        elif event.key() == 43:
+            self.__controller.modifier_poids(True)
+        elif event.key() == 45:
+            self.__controller.modifier_poids(False)
+        elif event.key() == 16777216:
+            self.__controller.unsel()

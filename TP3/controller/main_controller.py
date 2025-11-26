@@ -34,11 +34,8 @@ class MainController :
     def delete_graph(self, n):
         self.__model.delete_graph()
 
-    def click_event(self, position):
-        self.__model.click_event(position)
-
-    def release_event(self, pos, type):
-        self.__model.release_event(pos, type)
+    def release_event(self,pos_init, pos_end, type):
+        self.__model.release_event(pos_init, pos_end, type)
 
     def color(self):
         return self.__model.color_list()
@@ -46,8 +43,8 @@ class MainController :
     def edge_color(self):
         return self.__model.edge_color_list()
 
-    def delete_noeud(self):
-        self.__model.delete_noeud()
+    def delete(self):
+        self.__model.delete()
 
     def trouver_chemin(self, debut, fin):
         self.__model.trouver_chemin(debut, fin)
@@ -63,3 +60,9 @@ class MainController :
 
     def parcour_sommets(self, valeur):
         self.__model.parcour_sommets(valeur)
+
+    def modifier_poids(self, signe):
+        self.__model.modifier_poids(signe)
+
+    def unsel(self):
+        self.__model.unsel()
