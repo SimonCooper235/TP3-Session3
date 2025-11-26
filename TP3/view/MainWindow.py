@@ -89,7 +89,7 @@ class MainWindow(QMainWindow):
         nombre_noeuds = self.nombre_noeuds()
         self.sommet = Sommets(nombre_noeuds)
         self.sommet.sommets.connect(self.mettre_a_jour)
-        self.sommet.finished.connect(self.on_finished)
+        self.sommet.finished.connect(self.on_finished_sommet)
         self.sommet.start()
 
     def mettre_a_jour(self, valeur):
@@ -97,7 +97,7 @@ class MainWindow(QMainWindow):
         self.progressBar.setValue(int(valeur / nombre_noeuds * 100))
         self.__controller.parcour_sommets(valeur)
 
-    def on_finished(self):
+    def on_finished_sommet(self):
         self.progressBar.setValue(0)
 
     def nombre_noeuds(self):
