@@ -54,3 +54,12 @@ class MainController :
 
     def convert_pos(self, pos):
         return self.__canvas.convert_pos(pos)
+
+    def sommets(self):
+        self.__view.lancer_sommet()
+
+    def nombre_noeuds(self):
+        return self.__model.nombre_noeuds()
+
+    def parcour_sommets(self, valeur):
+        self.__model.parcour_sommets(valeur)

@@ -1,7 +1,7 @@
+import time
 import networkx as nx
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from PyQt6.QtGui import QMouseEvent
-from PyQt6.QtWidgets import QSpinBox, QProgressBar, QPushButton
 
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
@@ -65,8 +65,9 @@ class GraphCanvas(FigureCanvasQTAgg):
         self.draw_graphe()
 
     def mousePressEvent(self, event):
-        pos = self.__convert_pos(event)
-        self.__controller.click_event(pos)
+        if event.button() == Qt.MouseButton.LeftButton:
+            pos = self.__convert_pos(event)
+            self.__controller.click_event(pos)
 
     def mouseReleaseEvent(self, event : QMouseEvent):
         pos = self.__convert_pos(event)
@@ -79,3 +80,5 @@ class GraphCanvas(FigureCanvasQTAgg):
     def keyPressEvent(self, event):
         if event.key() == 16777223:
             self.__controller.delete_noeud()
+        if event.key() == 80:
+            self.__controller.sommets()

@@ -56,6 +56,9 @@ class GrapheModel(QObject):
     def edge_weight(self,edge):
         return  self._graphe[edge[0]][edge[1]]['weight']
 
+    def nombre_noeuds(self):
+        return self._graphe.number_of_nodes()
+
     def generate_graph(self):
         # Générer un graphe aléatoire non orienté avec une probabilité d'Arete donnée
         self._graphe = nx.gnp_random_graph(self.default_graphe_order, self.__proba, directed=False)
@@ -172,18 +175,34 @@ class GrapheModel(QObject):
 
     def trouver_chemin(self, debut, fin):
         self._chemin_court = nx.shortest_path(self._graphe, source=debut, target=fin, weight = 'weight')
-        print(self._chemin_court)
-
         self.grapheChanged.emit(self._pos)
 
     def edge_color_list(self):
         edge_color = []
         edges = self._graphe.edges()
+        colour_edge = None
+
         for edge in edges:
-            if self._chemin_court is not None and edge[0] in self._chemin_court and edge[1] in self._chemin_court:
+            if self._chemin_court is not None and len(self._chemin_court) > 1:
+                if self._chemin_court[0] <= self._chemin_court[1]:
+                    colour_edge = (self._chemin_court[0], self._chemin_court[1])
+                else:
+                    colour_edge = (self._chemin_court[1], self._chemin_court[0])
+
+            if colour_edge is not None and edge[0] == colour_edge[0] and edge[1] == colour_edge[1]:
                 self._chemin_court.remove(edge[0])
                 edge_color.append('orange')
             else:
                 edge_color.append('black')
 
         return edge_color
+
+    def parcour_sommets(self, valeur):
+        noeuds = self._pos.keys()
+        list = []
+        for noeud in noeuds:
+            if noeud <= valeur:
+                list.append(noeud)
+        self._chemin_court = list
+
+        self.grapheChanged.emit(self._pos)
