@@ -3,9 +3,8 @@ import threading
 
 import networkx as nx
 import matplotlib.pyplot as plt
-from PyQt6.QtCore import pyqtSignal, QObject
+from PyQt6.QtCore import pyqtSignal, QObject, QThread
 from networkx import Graph
-
 
 class GrapheModel(QObject):
     #Le graphe 0 à afficher
@@ -14,6 +13,8 @@ class GrapheModel(QObject):
     _pos=None
     #contient le noeud selectionné
     _selected = None
+    #contient les chemin le plus court
+    _chemin_court = None
     #numero à assigné aux noeuds
     _num_node : int = 10
 
@@ -67,6 +68,7 @@ class GrapheModel(QObject):
         self._pos  = nx.spring_layout(self._graphe, seed=42)
 
         self._selected = None
+        self._chemin_court = None
 
         # Notif des vues
         self.grapheChanged.emit(self._pos )
@@ -98,7 +100,6 @@ class GrapheModel(QObject):
 
     def release_event(self, pos, type):
         hasPos = self.verifierPos(pos)
-        positions = self._pos.values()
 
         if self._selected != None:
             x = self._pos[self._selected][0]
@@ -155,6 +156,8 @@ class GrapheModel(QObject):
         for node in self._graphe.nodes():
             if node == self._selected:
                 node_color.append('teal')
+            elif self._chemin_court != None and node in self._chemin_court:
+                node_color.append('orange')
             else:
                 node_color.append('skyblue')
         return node_color
@@ -166,3 +169,21 @@ class GrapheModel(QObject):
             self._selected = None
 
             self.grapheChanged.emit(self._pos)
+
+    def trouver_chemin(self, debut, fin):
+        self._chemin_court = nx.shortest_path(self._graphe, source=debut, target=fin, weight = 'weight')
+        print(self._chemin_court)
+
+        self.grapheChanged.emit(self._pos)
+
+    def edge_color_list(self):
+        edge_color = []
+        edges = self._graphe.edges()
+        for edge in edges:
+            if self._chemin_court is not None and edge[0] in self._chemin_court and edge[1] in self._chemin_court:
+                self._chemin_court.remove(edge[0])
+                edge_color.append('orange')
+            else:
+                edge_color.append('black')
+
+        return edge_color

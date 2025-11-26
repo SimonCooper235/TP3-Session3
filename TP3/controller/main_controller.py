@@ -43,5 +43,14 @@ class MainController :
     def color(self):
         return self.__model.color_list()
 
+    def edge_color(self):
+        return self.__model.edge_color_list()
+
     def delete_noeud(self):
         self.__model.delete_noeud()
+
+    def trouver_chemin(self, debut, fin):
+        self.__model.trouver_chemin(debut, fin)
+
+    def convert_pos(self, pos):
+        return self.__canvas.convert_pos(pos)

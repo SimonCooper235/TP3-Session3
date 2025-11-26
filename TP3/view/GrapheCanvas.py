@@ -1,6 +1,7 @@
 import networkx as nx
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QMouseEvent
+from PyQt6.QtWidgets import QSpinBox, QProgressBar, QPushButton
 
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
@@ -45,11 +46,12 @@ class GraphCanvas(FigureCanvasQTAgg):
 
     def __draw_graphe(self):
         noeud_couleur = self.__controller.color()
+        edge_color = self.__controller.edge_color()
         if self.__controller.graphe() is None:
             return
         try :
             # Dessiner le graphe dans l'axe du canvas
-            nx.draw(self.__controller.graphe(), self._pos , with_labels=True, node_color=noeud_couleur, node_size=800)
+            nx.draw(self.__controller.graphe(), self._pos , with_labels=True, node_color=noeud_couleur, node_size=800, edge_color=edge_color)
             labels = nx.get_edge_attributes(self.__controller.graphe(), "weight")
             nx.draw_networkx_edge_labels(self.__controller.graphe(), self._pos , edge_labels=labels)
         except NetworkXError as nxe :
@@ -70,6 +72,7 @@ class GraphCanvas(FigureCanvasQTAgg):
         pos = self.__convert_pos(event)
         if event.button() == Qt.MouseButton.LeftButton:
             self.__controller.release_event(pos, "L")
+            self.__controller.click_event(pos)
         elif event.button() == Qt.MouseButton.RightButton:
             self.__controller.release_event(pos, "R")
 
