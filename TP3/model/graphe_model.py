@@ -19,7 +19,7 @@ class GrapheModel(QObject):
     #contient les chemin le plus court
     _chemin_court = None
     #numero à assigné aux noeuds
-    _num_node : int = 10
+    _num_node = 10
 
     # probabilité qu'une arête existe entre deux nœuds pour la generation
     __proba=0.5
