@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from PyQt6.QtCore import pyqtSignal, QObject, QThread
 from networkx import Graph
+from numpy.distutils.system_info import x11_info
+
 
 class GrapheModel(QObject):
     #Le graphe 0 à afficher
@@ -16,6 +18,8 @@ class GrapheModel(QObject):
     _selected = None
     #contient l'arête sélectionné
     _selected_edge = None
+    # contient les noeuds dans le chemin le plus court
+    _chemin_court_noeuds = None
     #contient les chemin le plus court
     _chemin_court = None
     #numero à assigné aux noeuds
@@ -75,6 +79,7 @@ class GrapheModel(QObject):
 
         self._selected = None
         self._chemin_court = None
+        self._chemin_court_noeuds = None
         self._num_node = 10
 
         # Notif des vues
@@ -171,7 +176,7 @@ class GrapheModel(QObject):
         for node in self._graphe.nodes():
             if node == self._selected:
                 node_color.append('teal')
-            elif self._chemin_court != None and node in self._chemin_court:
+            elif self._chemin_court_noeuds is not None and node in self._chemin_court_noeuds:
                 node_color.append('orange')
             else:
                 node_color.append('skyblue')
@@ -191,7 +196,20 @@ class GrapheModel(QObject):
         self.grapheChanged.emit(self._pos)
 
     def trouver_chemin(self, debut, fin):
-        self._chemin_court = nx.shortest_path(self._graphe, source=debut, target=fin, weight = 'weight')
+        list_aretes : list = []
+        self._chemin_court_noeuds = nx.shortest_path(self._graphe, source=debut, target=fin, weight = 'weight')
+        chemin_court = self._chemin_court_noeuds
+
+        for i in range(len(self._chemin_court_noeuds) - 1):
+            arete : list = [self._chemin_court_noeuds[i], self._chemin_court_noeuds[i+1]]
+            list_aretes.append(arete)
+
+        for arete in list_aretes:
+            arete.sort()
+        list_aretes.sort(key=lambda x: (x[0], x[1]))
+
+        self._chemin_court = list_aretes
+
         self.grapheChanged.emit(self._pos)
 
     def edge_color_list(self):
@@ -201,14 +219,14 @@ class GrapheModel(QObject):
         colour_edge = None
 
         for edge in edges:
-            if self._chemin_court is not None and len(self._chemin_court) > 1:
-                if self._chemin_court[0] <= self._chemin_court[1]:
-                    colour_edge = (self._chemin_court[0], self._chemin_court[1])
-                else:
-                    colour_edge = (self._chemin_court[1], self._chemin_court[0])
+            # if self._chemin_court is not None and len(self._chemin_court) > 1:
+            #     if self._chemin_court[0] <= self._chemin_court[1]:
+            #         colour_edge = (self._chemin_court[0], self._chemin_court[1])
+            #     else:
+            #         colour_edge = (self._chemin_court[1], self._chemin_court[0])
 
-            if colour_edge is not None and edge[0] == colour_edge[0] and edge[1] == colour_edge[1]:
-                self._chemin_court.remove(edge[0])
+            if self._chemin_court is not None and len(self._chemin_court) >= 1 and self._chemin_court[0][0] == edge[0] and self._chemin_court[0][1] == edge[1]:
+                self._chemin_court.remove(list(edge))
                 edge_color.append('orange')
             elif sel is not None and edge[0] == sel[0] and edge[1] == sel[1] :
                 edge_color.append('teal')
